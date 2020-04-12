@@ -109,7 +109,7 @@ const viewEmployees = () => {
 
 //function to display all roles
 const viewRoles = () => {
-
+const joinTable = "SELECT employee.first_name AS First, employee.last_name AS Last, role.title FROM employee LEFT JOIN role ON employee.role_id = role.role_id;"
 }
 
 //
