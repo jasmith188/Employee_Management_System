@@ -96,9 +96,54 @@ const viewDepartments = () => {
 
 //
 const addEmployee = () => {
-    connection.query("SELECT * FROM role", (err, res) => {
-        if(err) throw err;
-        
+    connection.query("SELECT * FROM role", (err,res) => {
+        if (err) throw err;
+        const newRole = res.map((role) => {
+            return `${role.title}`
+        })
+        inquirer
+            .prompt([
+                {
+                    name: "first_name",
+                    type: "input",
+                    message: "Enter First Name"
+                },
+                {
+                    name: "last_name",
+                    type: "input",
+                    message: "Enter Last Name"
+                },
+                {
+                    name: "role",
+                    type: "list",
+                    message: "Choose the role?",
+                    choices: newRole
+                      
+                }
+            ]).then(answer => {
+                let idRole;
+                for (let i = 0; i < results.length; i++) {
+                    if (results[i].title === answer.role) {
+                         idRole = results[i].role_id;
+                    }
+                    
+                }
+                // when finished prompting, insert a new item into the db with that info
+                connection.query(
+                    "INSERT INTO employee SET ?",
+                    {
+                        first_name: answer.first_name,
+                        last_name: answer.last_name,
+                        role_id: idRole
+                    },
+                    function (err) {
+                        if (err) throw err;
+                        console.log(`n\ YOur new employee ${answer.first_name} ${answer.last_name} has been created\n`);
+                        // re-prompt the user for if they want to bid or post
+                        start();
+                    }
+                );
+            });
     })
 }
 
