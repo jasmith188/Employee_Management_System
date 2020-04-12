@@ -13,6 +13,7 @@
   "author": "jimmy smith",
   "license": "ISC",
   "dependencies": {
+    "asciiart-logo": "^0.2.6",
     "inquirer": "^7.1.0",
     "mysql": "^2.18.1"
   }
