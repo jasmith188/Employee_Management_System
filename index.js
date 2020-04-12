@@ -1,38 +1,8 @@
 // Required packages
 const connection = require("./db/connection");
 const inquirer = require("inquirer");
-// const logo = require('asciiart-logo');
-// const config = require('./package.json');
-// console.log(logo(config).render());
-// const longText = 'Lorem ipsum dolor sit amet, ' +
-//     'consectetur adipiscing elit, ' +
-//     'sed do eiusmod tempor incididunt ut labore et ' +
-//     'dolore magna aliqua. Ut enim ad minim veniam, ' +
-//     'quis nostrud exercitation ullamco laboris ' +
-//     'nisi ut aliquip ex ea commodo consequat. Duis aute ' +
-//     'irure dolor in reprehenderit in voluptate velit esse ' +
-//     'cillum dolore eu fugiat nulla pariatur. ' +
-//     'Excepteur sint occaecat cupidatat non proident, ' +
-//     'sunt in culpa qui officia deserunt mollit anim ' +
-//     'id est laborum.';
+const { printTable } = require('console-table-printer');
 
-// console.log(
-//     logo({
-//         name: 'Just a simple example',
-//         font: 'Speed',
-//         lineChars: 10,
-//         padding: 2,
-//         margin: 3,
-//         borderColor: 'grey',
-//         logoColor: 'bold-green',
-//         textColor: 'green',
-//     })
-//         .emptyLine()
-//         .right('version 3.7.123')
-//         .emptyLine()
-//         .center(longText)
-//         .render()
-// );
 
 //Create a connection to your database
 //Connect to your database and run function to start the apllication
@@ -104,12 +74,19 @@ function start() {
 
 //function to display all employees -- 
 const viewEmployees = () => {
+    const joinTable = "SELECT employee.first_name AS First, employee.last_name AS Last, role.title FROM employee LEFT JOIN role ON employee.role_id = role.id;"
+    connection.query(joinTable, (err, res) => {
+        if (err) throw err;
+        printTable(res);
+        start();
+    })
+    console.log("\n List of employees\n");
 
 }
 
 //function to display all roles
 const viewRoles = () => {
-const joinTable = "SELECT employee.first_name AS First, employee.last_name AS Last, role.title FROM employee LEFT JOIN role ON employee.role_id = role.role_id;"
+
 }
 
 //
@@ -119,7 +96,10 @@ const viewDepartments = () => {
 
 //
 const addEmployee = () => {
-
+    connection.query("SELECT * FROM role", (err, res) => {
+        if(err) throw err;
+        
+    })
 }
 
 //
