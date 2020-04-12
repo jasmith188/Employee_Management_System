@@ -4,9 +4,11 @@ const inquirer = require("inquirer");
 
 //Create a connection to your database
 //Connect to your database and run function to start the apllication
-connection.connect(err => {
-
-});
+connection.connect(function(err) {
+    if (err) throw err;
+    // run the start function after the connection is made to prompt the user
+    start();
+  });
 
 //Write fuctions to run the aplllications
 
