@@ -74,29 +74,40 @@ function start() {
 
 //function to display all employees -- 
 const viewEmployees = () => {
-    const joinTable = "SELECT employee.first_name AS First, employee.last_name AS Last, role.title FROM employee LEFT JOIN role ON employee.role_id = role.id;"
+    const joinTable = "SELECT employee.first_name AS first_name, employee.last_name AS last_name, role.title FROM employee LEFT JOIN role ON employee.role_id = role.id;"
     connection.query(joinTable, (err, res) => {
         if (err) throw err;
         printTable(res);
         start();
     })
-    console.log("\n List of employees\n");
+    console.log("\n List of Employees\n");
 
 }
 
 //function to display all roles
 const viewRoles = () => {
-
+    const joinTable = "SELECT role.title, role.salary, department.name FROM role LEFT JOIN department ON role.department_id = department.id;"
+    connection.query(joinTable, (err, res) => {
+        if (err) throw err;
+        printTable(res);
+        start();
+    })
+    console.log("\n List of all Roles as listed\n");
 }
 
 //
 const viewDepartments = () => {
-
+     const departments = connection.query("SELECT department.name FROM department", (err, res) => {
+        if (err) throw err;
+        printTable(res);
+        start();
+    })
+    console.log("\n List of all Roles as listed\n");
 }
 
 //
 const addEmployee = () => {
-    connection.query("SELECT * FROM role", (err,res) => {
+    connection.query("SELECT * FROM role", (err, res) => {
         if (err) throw err;
         const newRole = res.map((role) => {
             return `${role.title}`
@@ -118,15 +129,15 @@ const addEmployee = () => {
                     type: "list",
                     message: "Choose the role?",
                     choices: newRole
-                      
+
                 }
             ]).then(answer => {
                 let idRole;
-                for (let i = 0; i < results.length; i++) {
-                    if (results[i].title === answer.role) {
-                         idRole = results[i].role_id;
+                for (let i = 0; i < res.length; i++) {
+                    if (res[i].title == answer.role) {
+                        idRole = res[i].role_id;
                     }
-                    
+
                 }
                 // when finished prompting, insert a new item into the db with that info
                 connection.query(
@@ -136,9 +147,62 @@ const addEmployee = () => {
                         last_name: answer.last_name,
                         role_id: idRole
                     },
-                    function (err) {
+                    function(err) {
                         if (err) throw err;
                         console.log(`n\ YOur new employee ${answer.first_name} ${answer.last_name} has been created\n`);
+                        // re-prompt the user for if they want to bid or post
+                        start();
+                    }
+                );
+            })
+    })
+}
+
+//
+const addRole = () => {
+    connection.query("SELECT * FROM department", (err, res) => {
+        if (err) throw err;
+        const departmentName = res.map((depname) => {
+            return `${depname.name}`
+        })
+        inquirer
+            .prompt([
+                {
+                    name: "salary",
+                    type: "input",
+                    message: "Enter Employees Role"
+                },
+                {
+                    name: "role",
+                    type: "input",
+                    message: "Enter Employees Salary"
+                },
+                {
+                    name: "department",
+                    type: "list",
+                    message: "What Department does this employee work in?",
+                    choices: departmentName
+
+                }
+            ]).then(answer => {
+                let departmentId;
+                for (let i = 0; i < res.length; i++) {
+                    if (res[i].title == answer.role) {
+                        departmentId = res[i].department_id;
+                    }
+
+                }
+                // when finished prompting, insert a new item into the db with that info
+                connection.query(
+                    "INSERT INTO role SET ?",
+                    {
+                        role: answer.role,
+                        salary: answer.salary,
+                        department_id: departmentId
+                    },
+                    function (err) {
+                        if (err) throw err;
+                        console.log(`n\ YOur new role ${answer.role} has been created\n`);
                         // re-prompt the user for if they want to bid or post
                         start();
                     }
@@ -148,12 +212,29 @@ const addEmployee = () => {
 }
 
 //
-const addRole = () => {
-
-}
-
-//
 const addDepartment = () => {
+    inquirer
+        .prompt([
+            {
+                name: "department",
+                type: "input",
+                message: "What is the name of the new Department"
+            }
+
+        ]).then(answer => {
+            connection.query(
+                "INSERT INTO department SET ?",
+                {
+                    name: answer.department
+                },
+                function (err) {
+                    if (err) throw err;
+                    console.log(`n\ YOur new department ${answer.department} has been created\n`);
+                    // re-prompt the user for if they want to bid or post
+                    start();
+                }
+            );
+        });
 
 }
 
