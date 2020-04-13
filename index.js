@@ -2,6 +2,29 @@
 const connection = require("./db/connection");
 const inquirer = require("inquirer");
 const { printTable } = require('console-table-printer');
+const logo = require('asciiart-logo');
+const config = require('./package.json');
+console.log(logo(config).render());
+const longText = 'This is an application, ' +
+    'that will help manage a group of employees ';
+ 
+console.log(
+    logo({
+        name: 'CONTENT MANAGEMENT SYSTEM',
+        font: 'Speed',
+        lineChars: 10,
+        padding: 2,
+        margin: 3,
+        borderColor: 'grey',
+        logoColor: 'bold-green',
+        textColor: 'green',
+    })
+    .emptyLine()
+    .right('version 3.7.123')
+    .emptyLine()
+    .center(longText)
+    .render()
+);
 
 
 //Create a connection to your database
@@ -95,9 +118,9 @@ const viewRoles = () => {
     console.log("\n List of all Roles as listed\n");
 }
 
-//
+//function to display all Departments
 const viewDepartments = () => {
-     const departments = connection.query("SELECT department.name FROM department", (err, res) => {
+    const departments = connection.query("SELECT department.name FROM department", (err, res) => {
         if (err) throw err;
         printTable(res);
         start();
@@ -105,7 +128,7 @@ const viewDepartments = () => {
     console.log("\n List of all Roles as listed\n");
 }
 
-//
+// function to add an Employee
 const addEmployee = () => {
     connection.query("SELECT * FROM role", (err, res) => {
         if (err) throw err;
@@ -140,14 +163,13 @@ const addEmployee = () => {
 
                 }
                 // when finished prompting, insert a new item into the db with that info
-                connection.query(
-                    "INSERT INTO employee SET ?",
+                connection.query("INSERT INTO employee SET ?",
                     {
                         first_name: answer.first_name,
                         last_name: answer.last_name,
                         role_id: idRole
                     },
-                    function(err) {
+                    function (err) {
                         if (err) throw err;
                         console.log(`n\ YOur new employee ${answer.first_name} ${answer.last_name} has been created\n`);
                         // re-prompt the user for if they want to bid or post
@@ -158,7 +180,7 @@ const addEmployee = () => {
     })
 }
 
-//
+//function to add a Role
 const addRole = () => {
     connection.query("SELECT * FROM department", (err, res) => {
         if (err) throw err;
@@ -211,7 +233,7 @@ const addRole = () => {
     })
 }
 
-//
+//function to add a Department
 const addDepartment = () => {
     inquirer
         .prompt([
@@ -238,7 +260,71 @@ const addDepartment = () => {
 
 }
 
-//
+//Function to Update an Employee Role ( first_name, last_name, role_id )
 const updateEmployeeRole = () => {
+    const joinTable = "SELECT employee.first_name AS first_name, employee.last_name AS last_name, role.title FROM employee LEFT JOIN role ON employee.role_id = role.id;"
+    connection.query(joinTable, (err, res) => {
+        if (err) throw err;
+        printTable(res)
+    })
+    connection.query("SELECT * FROM role", (err, res) => {
+        if (err) throw err;
+        const chooseEmployee = res.map((name) => {
+            return `${name.first_name} ${name.last_name}`
+        })
+        connection.query("SELECT role.title, role.role_id, FROM role", (err, result) => {
+            if (err) throw err;
+            const chooseRole = res.map((name) => {
+                return `${name.first_name} ${name.last_name}`
+            })
 
+            inquirer
+                .prompt([
+                    {
+                        name: "updateEmployee",
+                        type: "list",
+                        message: "Which Employee do you want to update?",
+                        choices: "chooseEmployee"
+                    },
+                    {
+                        name: "updateRole",
+                        type: "list",
+                        message: "Enter Last Name",
+                        choices: "chooseRole"
+                    }
+
+                ]).then(answer => {
+                    let employeeId;
+                    for (let i = 0; i < res.length; i++) {
+                        if (res[i].title == answer.updateEmployee) {
+                            employeeId = res[i].employee_id;
+                        }
+
+                    }
+                    let roleId;
+                    for (let i = 0; i < res.length; i++) {
+                        if (res[i].title == answer.updateRole) {
+                            roleId = res[i].role_id;
+                        }
+
+                    }
+                    connection.query(
+                        "UPDATE employee SET ? WHERE ?",
+                        [
+                            {
+                                role_id: idRole
+                            },
+                            {
+                                id: answer.id
+                            }
+                        ],
+                        function (err, res) {
+                            if (err) throw err;
+                            start();
+                        }
+                    );
+                })
+
+        })
+    })
 }
