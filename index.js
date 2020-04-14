@@ -4,10 +4,10 @@ const inquirer = require("inquirer");
 const { printTable } = require('console-table-printer');
 const logo = require('asciiart-logo');
 const config = require('./package.json');
-console.log(logo(config).render());
+// console.log(logo(config).render());
 const longText = 'This is an application, ' +
     'that will help manage a group of employees ';
- 
+
 console.log(
     logo({
         name: 'CONTENT MANAGEMENT SYSTEM',
@@ -19,11 +19,11 @@ console.log(
         logoColor: 'bold-green',
         textColor: 'green',
     })
-    .emptyLine()
-    .right('version 3.7.123')
-    .emptyLine()
-    .center(longText)
-    .render()
+        .emptyLine()
+        .right('version 3.7.123')
+        .emptyLine()
+        .center(longText)
+        .render()
 );
 
 
@@ -155,19 +155,26 @@ const addEmployee = () => {
 
                 }
             ]).then(answer => {
-                let idRole;
-                for (let i = 0; i < res.length; i++) {
-                    if (res[i].title == answer.role) {
-                        idRole = res[i].role_id;
-                    }
 
-                }
+
+
+                let roleId;
+                res.filter(x => {
+                    if (x.title === answer.role) {
+                        roleId = x.id;
+                    }
+                });
+
+
+                console.log(roleId);
+
+
                 // when finished prompting, insert a new item into the db with that info
                 connection.query("INSERT INTO employee SET ?",
                     {
                         first_name: answer.first_name,
                         last_name: answer.last_name,
-                        role_id: idRole
+                        role_id: (roleId) || 1
                     },
                     function (err) {
                         if (err) throw err;
@@ -260,22 +267,22 @@ const addDepartment = () => {
 
 }
 
-//Function to Update an Employee Role ( first_name, last_name, role_id )
+// Function to Update an Employee Role ( first_name, last_name, role_id )
 const updateEmployeeRole = () => {
-    const joinTable = "SELECT employee.first_name AS first_name, employee.last_name AS last_name, role.title FROM employee LEFT JOIN role ON employee.role_id = role.id;"
+    const joinTable = "SELECT employee.first_name AS first_name, employee.last_name AS last_name, role.title FROM employee JOIN role ON employee.role_id = role.id;"
     connection.query(joinTable, (err, res) => {
         if (err) throw err;
         printTable(res)
     })
-    connection.query("SELECT * FROM role", (err, res) => {
+    connection.query("SELECT * FROM employee ", (err, res) => {
         if (err) throw err;
         const chooseEmployee = res.map((name) => {
             return `${name.first_name} ${name.last_name}`
         })
-        connection.query("SELECT role.title, role.role_id, FROM role", (err, result) => {
+        connection.query("SELECT role.title, role.id FROM role", (err, result) => {
             if (err) throw err;
-            const chooseRole = res.map((name) => {
-                return `${name.first_name} ${name.last_name}`
+            const chooseRole = result.map((role) => {
+                return `${role.title}`
             })
 
             inquirer
@@ -289,22 +296,22 @@ const updateEmployeeRole = () => {
                     {
                         name: "updateRole",
                         type: "list",
-                        message: "Enter Last Name",
+                        message: "Which role would you like to change",
                         choices: "chooseRole"
                     }
 
                 ]).then(answer => {
-                    let employeeId;
-                    for (let i = 0; i < res.length; i++) {
-                        if (res[i].title == answer.updateEmployee) {
-                            employeeId = res[i].employee_id;
+                    let roleId;
+                    for (let i = 0; i < results.length; i++) {
+                        if (results[i].title == answer.updateRole) {
+                            roleId = results[i].role_id;
                         }
 
                     }
-                    let roleId;
-                    for (let i = 0; i < res.length; i++) {
-                        if (res[i].title == answer.updateRole) {
-                            roleId = res[i].role_id;
+                    let employeeId;
+                    for (let i = 0; i < result.length; i++) {
+                        if (results[i].title == answer.updateEmployee) {
+                            employeeId = results[i].employee_id;
                         }
 
                     }
@@ -315,7 +322,7 @@ const updateEmployeeRole = () => {
                                 role_id: idRole
                             },
                             {
-                                id: answer.id
+                                employee_id: answer.id
                             }
                         ],
                         function (err, res) {
